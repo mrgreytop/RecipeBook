@@ -1,0 +1,12 @@
+{
+  "name": "RecipeBook",
+  "displayName": "RecipeBook",
+  "expo": {
+    "name": "RecipeBook",
+    "slug": "RecipeBook",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  }
+}
