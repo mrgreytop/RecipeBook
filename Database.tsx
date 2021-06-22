@@ -1,7 +1,14 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {Recipe} from "./types";
 
-var RecipeDatabase = (async function(){
+export interface IRecipeDatabase{
+    getAllRecipes:()=>Promise<Recipe[]>,
+    addRecipe:(recipe: Partial<Recipe>)=>Promise<number>,
+    removeRecipe:(recipe_id:number)=>Promise<void>,
+    updateRecipe:(recipe_id:number, update:Partial<Recipe>)=>Promise<void>,
+}
+
+export var RecipeDatabase = (async function(){
     
     var max_key = await findMaxKey();
 
