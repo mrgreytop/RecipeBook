@@ -5,9 +5,6 @@ import {
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import HomeScreen from './screens/Home';
-import { SafeAreaView, StatusBar } from 'react-native';
-
-const Stack = createStackNavigator()
 
 function ScreenController(){
   return(
@@ -17,15 +14,14 @@ function ScreenController(){
   )
 }
 
+const Stack = createStackNavigator();
+
 export default function App() {
   return (
     <PaperProvider>
-      <SafeAreaView>
-        <StatusBar/>
-        <NavigationContainer>
-          <ScreenController></ScreenController>
-        </NavigationContainer>
-      </SafeAreaView>
+      <NavigationContainer>
+        <ScreenController></ScreenController>
+      </NavigationContainer>
     </PaperProvider>
   );
 }

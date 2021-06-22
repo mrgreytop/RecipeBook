@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import { useEffect } from 'react';
-import { View, FlatList } from 'react-native';
+import { View, FlatList, Text } from 'react-native';
 import RecipeCard from '../components/RecipeCard';
 import { Recipe } from "../types";
 import { RecipeDatabase, IRecipeDatabase } from '../Database';
