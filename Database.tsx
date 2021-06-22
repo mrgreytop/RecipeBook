@@ -2,7 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import {Recipe} from "./types";
 
 export interface IRecipeDatabase{
-    getAllRecipes:()=>Promise<Recipe[]>,
+    getAllRecipes:(fields:string[]|undefined)=>Promise<Partial<Recipe>[]>,
     addRecipe:(recipe: Partial<Recipe>)=>Promise<number>,
     removeRecipe:(recipe_id:number)=>Promise<void>,
     updateRecipe:(recipe_id:number, update:Partial<Recipe>)=>Promise<void>,
@@ -29,7 +29,7 @@ export var RecipeDatabase = (async function(){
     }
 
     return {
-        getAllRecipes: async function():Promise<Recipe[]>{
+        getAllRecipes: async function(fields:string[]|undefined):Promise<Partial<Recipe>[]>{
             return AsyncStorage.getAllKeys().then((keys:string[]|undefined)=>{
                 if (keys === undefined){
                     return []
@@ -42,13 +42,21 @@ export var RecipeDatabase = (async function(){
 
                 let recipe_objs:Recipe[] = recipes.map((key_val:[string,string|null])=>{
                     if (key_val[1] !== null){
-                        return JSON.parse(key_val[1]);
+                        let obj = JSON.parse(key_val[1]);
+                        if (fields !== undefined){
+                            for (const key in obj) {
+                                if(!fields.includes(key)){
+                                    delete obj[key];
+                                }
+                            }
+                        }
+                        return obj
                     }else{
                         return null
                     }
                 })
-
-                return recipe_objs.filter((obj)=>obj!==null)
+                
+                return recipe_objs.filter((obj) => obj !== null)
             })
         },
 
