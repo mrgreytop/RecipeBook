@@ -1,12 +1,14 @@
 import React, {useState} from "react";
-import { View, StyleSheet, FlatList } from "react-native";
+import { View, StyleSheet, FlatList, TextInput as NativeTextInput } from "react-native";
 import { TextInput, FAB } from "react-native-paper";
 import IngredientCard from "../components/IngredientCard";
+import { RecipeIngredient } from "../types";
 
 export default function RecipeFormScreen(){
 
-    const [name, setName] = useState<string>();
-    const [ingredients, setIngredients] = useState<any>();
+    const [name, setName] = useState<string>("");
+    const [servings, setServings] = useState<string>("");
+    const [ingredients, setIngredients] = useState<RecipeIngredient[]>();
 
     return (
         <View style = {styles.flexCol}>
@@ -16,9 +18,21 @@ export default function RecipeFormScreen(){
                 value={name}
                 onChangeText={(text) => setName(text)}
             ></TextInput>
+            <TextInput
+                label="servings"
+                value={servings}
+                onChangeText={(text) => setServings(text)}
+                render={(props) =>
+                    <NativeTextInput
+                        {...props}
+                        keyboardType="number-pad"
+                    ></NativeTextInput>
+                }
+                style={{ flex: 1 }}
+            ></TextInput>
             <FlatList
                 data = {ingredients}
-                renderItem = {(item:any)=>(
+                renderItem = {(item)=>(
                     <IngredientCard {...item}></IngredientCard>
                 )}
             ></FlatList>
