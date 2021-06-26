@@ -4,8 +4,27 @@ export type Tag = {
     name:string
 }
 
+enum Measure{
+    Weight,
+    Volume,
+    Length
+}
+
+export type Unit = {
+    symbol:string,
+    measure:Measure
+}
+
+export type RecipeIngredient = {
+    name: string,
+    amount: number,
+    unit: Unit
+}
+
 export type Recipe = {
     _id:number,
     name:string,
-    tags:Tag[]
+    servings:number,
+    tags:Tag[],
+    ingredients:RecipeIngredient[]
 }
