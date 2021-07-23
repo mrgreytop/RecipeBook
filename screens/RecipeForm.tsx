@@ -2,12 +2,17 @@ import React, {useState} from "react";
 import { View, StyleSheet, FlatList, TextInput as NativeTextInput } from "react-native";
 import { TextInput } from "react-native-paper";
 import { RecipeIngredient } from "../types";
+import IngredientCard from "../components/IngredientCard";
 
 export default function RecipeFormScreen(){
 
     const [name, setName] = useState<string>("");
     const [servings, setServings] = useState<string>("");
-    const [ingredients, setIngredients] = useState<RecipeIngredient[]>([]);
+    const [ingredients, setIngredients] = useState<({key:string} | RecipeIngredient)[]>([
+        {key:"1", amount:5,unit:"kg",name:"salt"},
+        {key:"2", amount:5,unit:"",name:"onions"},
+        {key:"3", amount:20,unit:"ml",name:"water"},
+    ]);
 
     return (
         <View style = {styles.flexCol}>
@@ -30,10 +35,13 @@ export default function RecipeFormScreen(){
                 }
             ></TextInput>
             <View style ={{flex:1}}>
-                {/* <FlatList
+                <FlatList
                     data = {ingredients}
+                    renderItem = {(ing)=>{
+                        return <IngredientCard {...ing}></IngredientCard>
+                    }}
                 >
-                </FlatList> */}
+                </FlatList>
             </View>
         </View>
     )

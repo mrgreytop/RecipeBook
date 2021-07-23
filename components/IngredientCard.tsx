@@ -1,43 +1,31 @@
-import React, {useState} from "react";
-import { View, TextInput as NativeTextInput } from "react-native";
-import {
-    TextInput
-} from "react-native-paper";
+import React from "react";
+import { StyleSheet } from "react-native";
+import {Text, Surface} from "react-native-paper";
 
 export default function IngredientCard(props:any){
-
-    const [name, setName] = useState<string>("");
-    const [amount, setAmount] = useState<string>("");
-    const [unit, setUnit] = useState<string>("");
-
+    let ing = props.item
     return (
-        <View>
-            <View>
-                <TextInput
-                    label = "name"
-                    placeholder = "name"
-                    value = {name}
-                    onChangeText = {(text)=>setName(text)}
-                    style = {{flex:3}}
-                ></TextInput>
-                <TextInput
-                    label = "amount"
-                    value = {amount}
-                    onChangeText={(text) => setAmount(text)}
-                    render = {(props)=>
-                        <NativeTextInput
-                            {...props}
-                            keyboardType = "number-pad"
-                        ></NativeTextInput>
-                    }
-                    style = {{flex:1}}
-                ></TextInput>
-                <TextInput
-                    label = "unit"
-                    value = {unit}
-                    onChangeText = {(text)=>setUnit(text)}
-                ></TextInput>
-            </View>
-        </View>
+        <Surface style={stylesheet.surface}>
+            <Text style = {{...stylesheet.text, ...stylesheet.amount_bold}}>{`${ing.amount}${ing.unit} `}</Text>
+            <Text style = {stylesheet.text}>{ing.name}</Text>
+        </Surface>
     )
 }
+
+const stylesheet = StyleSheet.create({
+    amount_bold:{
+        fontWeight:"bold"
+    },
+    text: {
+        fontSize:16
+    },
+    surface: {
+        flex:1,
+        flexDirection: "row",
+        elevation: 4,
+        marginHorizontal: 5,
+        marginVertical: 2,
+        paddingHorizontal:5,
+        paddingVertical:8
+    }
+})

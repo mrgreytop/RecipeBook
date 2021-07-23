@@ -18,7 +18,7 @@ export type Unit = {
 export type RecipeIngredient = {
     name: string,
     amount: number,
-    unit: Unit
+    unit: string
 }
 
 export type Recipe = {
