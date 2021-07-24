@@ -1,13 +1,34 @@
-import React from "react";
-import { StyleSheet } from "react-native";
-import {Text, Surface} from "react-native-paper";
+import React, {useState} from "react";
+import { NativeSyntheticEvent, Pressable, StyleSheet, TextInputSubmitEditingEventData, View } from "react-native";
+import {Text, Surface, TextInput} from "react-native-paper";
+
+type onTextSubmit = NativeSyntheticEvent<TextInputSubmitEditingEventData>
 
 export default function IngredientCard(props:any){
-    let ing = props.item
+    const [edit, setEdit] = useState<boolean>(false);
+    let ing = props.item;
+
+    const onSubmitEditing = (ev:onTextSubmit)=>{
+        props.onEdit({key:ing.key, ...ev});
+        setEdit(false);
+    }
+
     return (
         <Surface style={stylesheet.surface}>
-            <Text style = {{...stylesheet.text, ...stylesheet.amount_bold}}>{`${ing.amount}${ing.unit} `}</Text>
-            <Text style = {stylesheet.text}>{ing.name}</Text>
+            {edit ?
+                <TextInput 
+                    defaultValue={parseFloat(ing.amount) + ing.unit + " " + ing.name}
+                    onSubmitEditing={onSubmitEditing}
+                ></TextInput> :
+                <Pressable
+                    onPress={() => { setEdit(true) }}
+                >
+                    <View style={stylesheet.flexRow}>
+                        <Text style={{ ...stylesheet.text, ...stylesheet.amount_bold }}>{`${ing.amount}${ing.unit} `}</Text>
+                        <Text style={stylesheet.text}>{ing.name}</Text>
+                    </View>
+                </Pressable>
+            }
         </Surface>
     )
 }
@@ -20,12 +41,14 @@ const stylesheet = StyleSheet.create({
         fontSize:16
     },
     surface: {
-        flex:1,
-        flexDirection: "row",
         elevation: 4,
         marginHorizontal: 5,
         marginVertical: 2,
         paddingHorizontal:5,
         paddingVertical:8
+    },
+    flexRow: {
+        flex: 1,
+        flexDirection: "row",
     }
 })
