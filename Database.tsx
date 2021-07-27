@@ -1,6 +1,9 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {Recipe} from "./types";
 
+// TODO add shopping lists to database
+
+
 export interface IRecipeDatabase{
     getAllRecipes:()=>Promise<Recipe[]>,
     addRecipe:(recipe: Partial<Recipe>)=>Promise<number>,

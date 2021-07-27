@@ -49,6 +49,8 @@ function parse_ingredients(ing_text:string):RecipeIngredient[]{
 
 export default function RecipeFormScreen(props:any){
 
+    // TODO implment tags in form
+
     const [name, setName] = useState<string>("");
     const [servings, setServings] = useState<string>("");
     const [ingredients, setIngredients] = useState<({key:string} & RecipeIngredient)[]>([]);
@@ -122,7 +124,7 @@ export default function RecipeFormScreen(props:any){
 
     const onSave = ()=>{
         console.log("saving recipe")
-        // TODO add validation
+        // TODO add validation with snackbars
         let recipe = {
             name: name,
             servings: parseInt(servings),

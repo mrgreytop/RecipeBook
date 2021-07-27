@@ -17,6 +17,8 @@ function ScreenController(){
   )
 }
 
+// TODO create a 'shopping list screen'
+
 const Stack = createStackNavigator();
 
 export default function App() {
