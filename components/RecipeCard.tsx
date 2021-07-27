@@ -21,7 +21,10 @@ export default function RecipeCard(props:any){
                  </View>
             </Card.Content>
             <Card.Actions>
-                <Button icon="pencil">Edit</Button>
+                <Button 
+                    icon="pencil"
+                    onPress={() => { props.clickThis(ing._id)}}
+                >Edit</Button>
                 <Button 
                     icon="trash-can" 
                     onPress = {()=>{props.removeThis(ing._id)}}

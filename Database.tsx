@@ -6,6 +6,7 @@ export interface IRecipeDatabase{
     addRecipe:(recipe: Partial<Recipe>)=>Promise<number>,
     removeRecipe:(recipe_id:number)=>Promise<void>,
     updateRecipe:(recipe_id:number, update:Partial<Recipe>)=>Promise<void>,
+    readRecipe: (recipe_id:number)=>Promise<Recipe>,
 }
 
 export var RecipeDatabase = (async function(){
@@ -79,6 +80,16 @@ export var RecipeDatabase = (async function(){
                 return AsyncStorage.setItem(
                     `@recipe:${recipe_id}`, JSON.stringify(updated_recipe)
                 );
+            })
+        },
+
+        readRecipe: async function (recipe_id:number): Promise<Recipe>{
+            return AsyncStorage.getItem(`@recipe:${recipe_id}`).then((recipe_json:string|null)=>{
+                if(recipe_json === null){
+                    throw new Error(`Cannot find recipe @recipe:${recipe_id}`)
+                }
+                let recipe:Recipe = JSON.parse(recipe_json)
+                return recipe
             })
         }
     }

@@ -45,8 +45,8 @@ export default function HomeScreen(props:any) {
         })
     }
 
-    const clickRecipe = ()=>{
-        // props.navigation.navigate()
+    const clickRecipe = (recipe_id:number)=>{
+        props.navigation.navigate("Recipe", {recipe_id:recipe_id})
     }
 
     const addRecipe = ()=>{

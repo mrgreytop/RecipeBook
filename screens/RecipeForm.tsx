@@ -7,6 +7,7 @@ import { TextInput, Button } from "react-native-paper";
 import { RecipeIngredient } from "../types";
 import IngredientCard from "../components/IngredientCard";
 import { RecipeDatabase, IRecipeDatabase } from '../Database';
+import {Recipe} from "../types";
 
 
 let recipeDb: Promise<IRecipeDatabase> = RecipeDatabase();
@@ -52,9 +53,33 @@ export default function RecipeFormScreen(props:any){
     const [servings, setServings] = useState<string>("");
     const [ingredients, setIngredients] = useState<({key:string} & RecipeIngredient)[]>([]);
     const [newIngredient, setNewIngredient] = useState<string>("");
+    const [isBound, setIsBound] = useState<boolean>(false);
 
     const newIngInput = useRef(null);
 
+    useEffect(()=>{
+        if(props.route.params){
+            initForm(props.route.params.recipe_id)
+        }
+    },[])
+
+    const initForm = async (recipe_id:number)=>{
+        recipeDb.then(db=>{
+            return db.readRecipe(recipe_id)
+        }).then((recipe:Recipe) => {
+            setName(recipe.name)
+            setServings(`${recipe.servings}`)
+            setIngredients(
+                recipe.ingredients.map((e,i)=>{
+                    return {
+                        key:`${i}`,
+                        ...e
+                    }
+                })
+            )
+            setIsBound(true);
+        })
+    }
 
     const onIngredientEdit = (ev:(onTextSubmit&{key:string}))=>{
         let ings = parse_ingredients(ev.nativeEvent.text)
@@ -85,7 +110,7 @@ export default function RecipeFormScreen(props:any){
                 }
                 let new_ings = ings.map((e, i)=>{
                     return {
-                        key:`${last_key - i - 1}`,
+                        key:`${last_key + i + 1}`,
                         ...e
                     }
                 })
@@ -97,14 +122,28 @@ export default function RecipeFormScreen(props:any){
 
     const onSave = ()=>{
         console.log("saving recipe")
-        console.log("recipe null?", recipeDb === undefined)
-        recipeDb.then((db)=>{
-            return db.addRecipe({
-            name:name,
-            servings:parseInt(servings),
-            tags:[],
-            ingredients:ingredients
+        // TODO add validation
+        let recipe = {
+            name: name,
+            servings: parseInt(servings),
+            tags: [],
+            ingredients: ingredients.map(ing => {
+                return {
+                    name: ing.name,
+                    amount: ing.amount,
+                    unit: ing.unit
+                }
             })
+        }
+        recipeDb.then((db)=>{
+            if (isBound){
+                db.updateRecipe(
+                    props.route.params.recipe_id,
+                    recipe
+                )
+            }else{
+                db.addRecipe(recipe)
+            }
         }).then(() => {
             console.log("recipe saved")
             props.navigation.navigate("Home")
