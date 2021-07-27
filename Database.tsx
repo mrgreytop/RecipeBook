@@ -9,25 +9,24 @@ export interface IRecipeDatabase{
 }
 
 export var RecipeDatabase = (async function(){
-    
+    console.log("initialising database")
     var max_key = await findMaxKey();
 
     async function findMaxKey():Promise<number>{
         return AsyncStorage.getItem("@maxkey:recipe").then((val:string|null)=>{
-            if(val === null){
-                return 0
-            }else{
-                return parseInt(val)
-            }
+            let max_key = val === null ? 0 : parseInt(val)
+            console.log("found max_key")
+            return max_key
         })    
     }
 
     async function incrementMaxKey():Promise<number>{
+        console.log("getting next id number")
         max_key += 1;
         await AsyncStorage.setItem("@maxkey:recipe", `${max_key}`)
         return max_key
     }
-
+    console.log("database initialised")
     return {
         getAllRecipes: async function():Promise<Recipe[]>{
             return AsyncStorage.getAllKeys().then((keys:string[]|undefined)=>{
@@ -56,15 +55,18 @@ export var RecipeDatabase = (async function(){
         addRecipe: async function(recipe:Partial<Recipe>): Promise<number>{
             let recipe_id = await incrementMaxKey()
             recipe._id = recipe_id;
-
+            console.log("stringifying recipe")
             let recipe_json = JSON.stringify(recipe)
+            console.log("setting recipe item in db")
             await AsyncStorage.setItem(`@recipe:${recipe_id}`, recipe_json)
-
+            console.log("recipe saved", recipe)
             return recipe_id
         },
 
         removeRecipe: async function(recipe_id:number): Promise<void>{
-            return AsyncStorage.removeItem(`@recipe:${recipe_id}`)
+            console.log("removing recipe")
+            await AsyncStorage.removeItem(`@recipe:${recipe_id}`)
+            console.log("recipe removed")
         },
 
         updateRecipe: async function(recipe_id:number, update:Partial<Recipe>): Promise<void>{

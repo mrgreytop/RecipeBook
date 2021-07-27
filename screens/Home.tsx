@@ -1,37 +1,47 @@
-import React, {useState} from 'react';
-import { useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import { View, FlatList, StyleSheet } from 'react-native';
 import RecipeCard from '../components/RecipeCard';
 import { Recipe } from "../types";
 import { RecipeDatabase, IRecipeDatabase } from '../Database';
 import { FAB } from 'react-native-paper';
 
+let recipeDb: Promise<IRecipeDatabase> = RecipeDatabase();
 
 export default function HomeScreen(props:any) {
 
     const [recipes, setRecipes] = useState<Recipe[]>()
-    let recipeDb:IRecipeDatabase|undefined = undefined;
 
     useEffect(()=>{
-        initRecipes();
-    }, [])
+        const unsub = props.navigation.addListener(
+            "focus",
+            ()=>{
+                initRecipes()
+            }
+        )
+        return unsub;
+    },[props.navigation]);
 
     const initRecipes = async ()=>{
-        recipeDb = await RecipeDatabase();
-        let init_recipes = await recipeDb.getAllRecipes()
-        setRecipes(init_recipes);
+        return recipeDb.then(db=>{
+            return db.getAllRecipes();
+        }).then(init_recipes =>{
+            setRecipes(init_recipes);
+        });
     }
 
     const removeRecipe = async (recipe_id:number)=>{
-        await recipeDb?.removeRecipe(recipe_id)
-        setRecipes((old_recipes:Recipe[]|undefined)=>{
-            if(old_recipes !== undefined){
-                let remove_idx = old_recipes.findIndex((r: Recipe) => r._id == recipe_id)
-                return [
-                    ...old_recipes.slice(0, remove_idx), 
-                    ...old_recipes.slice(remove_idx + 1)
-                ]
-            }
+        return recipeDb.then(db=>{
+            return db.removeRecipe(recipe_id);
+        }).then(()=>{
+            setRecipes((old_recipes: Recipe[] | undefined) => {
+                if (old_recipes !== undefined) {
+                    let remove_idx = old_recipes.findIndex((r: Recipe) => r._id == recipe_id)
+                    return [
+                        ...old_recipes.slice(0, remove_idx),
+                        ...old_recipes.slice(remove_idx + 1)
+                    ]
+                }
+            })
         })
     }
 

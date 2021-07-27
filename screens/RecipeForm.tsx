@@ -8,6 +8,9 @@ import { RecipeIngredient } from "../types";
 import IngredientCard from "../components/IngredientCard";
 import { RecipeDatabase, IRecipeDatabase } from '../Database';
 
+
+let recipeDb: Promise<IRecipeDatabase> = RecipeDatabase();
+
 type onTextSubmit = (
     NativeSyntheticEvent<TextInputSubmitEditingEventData>
 )
@@ -52,15 +55,6 @@ export default function RecipeFormScreen(props:any){
 
     const newIngInput = useRef(null);
 
-    let recipeDb: IRecipeDatabase | undefined = undefined;
-
-    useEffect(() => {
-        initRecipe();
-    }, [])
-
-    const initRecipe = async () => {
-        recipeDb = await RecipeDatabase();
-    }
 
     const onIngredientEdit = (ev:(onTextSubmit&{key:string}))=>{
         let ings = parse_ingredients(ev.nativeEvent.text)
@@ -103,12 +97,15 @@ export default function RecipeFormScreen(props:any){
 
     const onSave = ()=>{
         console.log("saving recipe")
-        recipeDb?.addRecipe({
+        console.log("recipe null?", recipeDb === undefined)
+        recipeDb.then((db)=>{
+            return db.addRecipe({
             name:name,
             servings:parseInt(servings),
             tags:[],
             ingredients:ingredients
-        }).then(()=>{
+            })
+        }).then(() => {
             console.log("recipe saved")
             props.navigation.navigate("Home")
         })
