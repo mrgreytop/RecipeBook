@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import {Recipe} from "./types";
+import {Recipe, Unit} from "./types";
 
 // TODO add shopping lists to database
 
@@ -93,6 +93,18 @@ export var RecipeDatabase = (async function(){
                 }
                 let recipe:Recipe = JSON.parse(recipe_json)
                 return recipe
+            })
+        },
+
+        readUnit: async function(unit_symbol:string): Promise<Unit>{
+            let slug_symbol = unit_symbol.replace(" ", "_")
+            return AsyncStorage.getItem(`@unit:${slug_symbol}`).then((unit_json:string|null)=>{
+                if (unit_json === null) {
+                    throw new Error(`Cannot find list`);
+                } else {
+                    let unit: Unit = JSON.parse(unit_json);
+                    return unit;
+                }
             })
         }
     }
