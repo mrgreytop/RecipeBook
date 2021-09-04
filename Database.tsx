@@ -12,7 +12,7 @@ export interface IRecipeDatabase{
     readRecipe: (recipe_id:number)=>Promise<Recipe>,
 }
 
-export var RecipeDatabase = (async function(){
+export var RecipeDatabase = (async function(new_recipe_listners?: Function[]){
     console.log("initialising database")
     var max_key = await findMaxKey();
 
@@ -30,6 +30,13 @@ export var RecipeDatabase = (async function(){
         await AsyncStorage.setItem("@maxkey:recipe", `${max_key}`)
         return max_key
     }
+
+    function notifyNewRecipeListeners(){
+        if (new_recipe_listners !== undefined){
+            new_recipe_listners.map(f=>f())
+        }
+    }
+
     console.log("database initialised")
     return {
         getAllRecipes: async function():Promise<Recipe[]>{
@@ -59,11 +66,9 @@ export var RecipeDatabase = (async function(){
         addRecipe: async function(recipe:Partial<Recipe>): Promise<number>{
             let recipe_id = await incrementMaxKey()
             recipe._id = recipe_id;
-            console.log("stringifying recipe")
             let recipe_json = JSON.stringify(recipe)
-            console.log("setting recipe item in db")
             await AsyncStorage.setItem(`@recipe:${recipe_id}`, recipe_json)
-            console.log("recipe saved", recipe)
+            notifyNewRecipeListeners()
             return recipe_id
         },
 
@@ -96,17 +101,17 @@ export var RecipeDatabase = (async function(){
             })
         },
 
-        readUnit: async function(unit_symbol:string): Promise<Unit>{
-            let slug_symbol = unit_symbol.replace(" ", "_")
-            return AsyncStorage.getItem(`@unit:${slug_symbol}`).then((unit_json:string|null)=>{
-                if (unit_json === null) {
-                    throw new Error(`Cannot find list`);
-                } else {
-                    let unit: Unit = JSON.parse(unit_json);
-                    return unit;
-                }
-            })
-        }
+        // readUnit: async function(unit_symbol:string): Promise<Unit>{
+        //     let slug_symbol = unit_symbol.replace(" ", "_")
+        //     return AsyncStorage.getItem(`@unit:${slug_symbol}`).then((unit_json:string|null)=>{
+        //         if (unit_json === null) {
+        //             throw new Error(`Cannot find list`);
+        //         } else {
+        //             let unit: Unit = JSON.parse(unit_json);
+        //             return unit;
+        //         }
+        //     })
+        // }
     }
 
 })

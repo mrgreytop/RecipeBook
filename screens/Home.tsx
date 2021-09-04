@@ -7,12 +7,11 @@ import { FAB } from 'react-native-paper';
 
 // TODO create context for recipeDatabase 
 // instead of instantiating on every screen
-let recipeDb: Promise<IRecipeDatabase> = RecipeDatabase();
 
 export default function HomeScreen(props:any) {
-
+    
     // TODO implment search function
-
+    
     const [recipes, setRecipes] = useState<Recipe[]>()
 
     useEffect(()=>{
@@ -32,6 +31,7 @@ export default function HomeScreen(props:any) {
             setRecipes(init_recipes);
         });
     }
+    let recipeDb: Promise<IRecipeDatabase> = RecipeDatabase([initRecipes]);
 
     const removeRecipe = async (recipe_id:number)=>{
         return recipeDb.then(db=>{
