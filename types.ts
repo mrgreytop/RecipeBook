@@ -4,18 +4,25 @@ export type Tag = {
     name:string
 }
 
-enum Measure{
-    Weight,
-    Volume,
-    Length
+export enum SiMeasure{
+    Weight = "kg",
+    Volume = "ml",
+    None = "",
 }
 
 export type Unit = {
     symbol:string,
-    measure:Measure
+    measure:SiMeasure,
+    factor?:number
 }
 
 export type RecipeIngredient = {
+    name: string,
+    amount: number,
+    unit: Unit
+}
+
+export type LazyRecipeIngredient = {
     name: string,
     amount: number,
     unit: string
@@ -27,4 +34,13 @@ export type Recipe = {
     servings:number,
     tags:Tag[],
     ingredients:RecipeIngredient[]
+}
+
+export type ListIngredient = {
+    _id:number,
+    ingredients:RecipeIngredient[]
+}
+
+export type ListRecipe = {
+    recipes:Recipe[]
 }

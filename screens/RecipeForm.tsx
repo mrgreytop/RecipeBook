@@ -4,10 +4,9 @@ import {
     TextInputSubmitEditingEventData, NativeSyntheticEvent
 } from "react-native";
 import { TextInput, Button } from "react-native-paper";
-import { RecipeIngredient } from "../types";
 import IngredientCard from "../components/IngredientCard";
-import { RecipeDatabase, IRecipeDatabase } from '../Database';
-import {Recipe} from "../types";
+import { RecipeDatabase, IRecipeDatabase, null_unit } from '../Database';
+import { Recipe, Unit, LazyRecipeIngredient} from "../types";
 
 
 let recipeDb: Promise<IRecipeDatabase> = RecipeDatabase();
@@ -18,34 +17,10 @@ type onTextSubmit = (
 
 //TODO load from database
 const units = [
-    "oz",
+    "",
     "ml",
-    "kg"
+    "g"
 ]
-
-function parse_ingredients(ing_text:string):RecipeIngredient[]{
-    let unit_group = units.join("|")
-    let rg = RegExp(`^[\\s]*([\\d\\.]+)[\\s]*(${unit_group}|)(.*)$`, "gm")
-
-    let ingredients = []
-
-    var match = rg.exec(ing_text)
-
-    while (match !== null) {
-        let name = match[3].trim()
-        name = /^x(\b|[0-9])/gm.test(name) ? name.slice(1).trim() : name
-
-        ingredients.push({
-            amount: parseFloat(match[1]),
-            unit: match[2].trim(),
-            name: name
-        })
-        match = rg.exec(ing_text);
-    }
-
-    return ingredients
-}
-
 
 export default function RecipeFormScreen(props:any){
 
@@ -53,9 +28,10 @@ export default function RecipeFormScreen(props:any){
 
     const [name, setName] = useState<string>("");
     const [servings, setServings] = useState<string>("");
-    const [ingredients, setIngredients] = useState<({key:string} & RecipeIngredient)[]>([]);
+    const [ingredients, setIngredients] = useState<({key:string} & LazyRecipeIngredient)[]>([]);
     const [newIngredient, setNewIngredient] = useState<string>("");
     const [isBound, setIsBound] = useState<boolean>(false);
+    const [errors, setErrors] = useState<Map<string, string>>(new Map<string, string>());
 
     const newIngInput = useRef(null);
 
@@ -83,10 +59,36 @@ export default function RecipeFormScreen(props:any){
         })
     }
 
+    function parse_ingredients(ing_text: string): LazyRecipeIngredient[] {
+        let unit_group = units.join("|")
+        let rg = RegExp(`^[\\s]*([\\d\\.]+)[\\s]*(${unit_group})(.*)$`, "gm")
+
+        let ingredients: LazyRecipeIngredient[] = []
+
+        var match = rg.exec(ing_text)
+
+        while (match !== null) {
+            let name = match[3].trim()
+            name = /^x(\b|[0-9])/gm.test(name) ? name.slice(1).trim() : name
+
+            let unit = match[2].trim()
+            let amount = parseFloat(match[1])
+
+            ingredients.push({
+                amount: amount,
+                unit: unit,
+                name: name
+            })
+
+            match = rg.exec(ing_text);
+        }
+
+        return ingredients
+    }
+
     const onIngredientEdit = (ev:(onTextSubmit&{key:string}))=>{
         let ings = parse_ingredients(ev.nativeEvent.text)
         if (ings.length == 1){
-            console.log("changing ingredient")
             let new_ings = [...ingredients];
             let idx_to_change = new_ings.findIndex(
                 ing => ing.key == ev.key
