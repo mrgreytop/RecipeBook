@@ -10,7 +10,11 @@ function convert_unit(amount:number, unit:Unit, new_unit:Unit):number|null{
     if (unit.measure == SiMeasure.None){
         return amount
     }
-    return amount / (unit.factor * new_unit.factor)
+    if ((unit.factor === null) && (new_unit.factor === null)){
+        return amount / (unit.factor * new_unit.factor)
+    }else{
+        throw new Error("unexpected null factors")
+    }
 }
 
 function combine_ingredients(ingredients: RecipeIngredient[][]){}
