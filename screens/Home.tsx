@@ -13,6 +13,15 @@ export default function HomeScreen(props:any) {
     // TODO implment search function
     
     const [recipes, setRecipes] = useState<Recipe[]>()
+    
+    const initRecipes = async ()=>{
+        return recipeDb.then(db=>{
+            return db.getAllRecipes();
+        }).then(init_recipes =>{
+            setRecipes(init_recipes);
+        });
+    }
+    const recipeDb: Promise<IRecipeDatabase> = RecipeDatabase([initRecipes]);
 
     useEffect(()=>{
         const unsub = props.navigation.addListener(
@@ -23,15 +32,6 @@ export default function HomeScreen(props:any) {
         )
         return unsub;
     },[props.navigation]);
-
-    const initRecipes = async ()=>{
-        return recipeDb.then(db=>{
-            return db.getAllRecipes();
-        }).then(init_recipes =>{
-            setRecipes(init_recipes);
-        });
-    }
-    let recipeDb: Promise<IRecipeDatabase> = RecipeDatabase([initRecipes]);
 
     const removeRecipe = async (recipe_id:number)=>{
         return recipeDb.then(db=>{
