@@ -109,6 +109,12 @@ export default function RecipeFormScreen(props:any){
         }
     }
 
+    const onIngredientDelete = (key:string)=>{
+        setIngredients(old_ings=>{
+            return old_ings.filter(ing=>ing.key !== key)
+        })
+    }
+
     const addNewIngredient = (ev:onTextSubmit)=>{
         let ings = parse_ingredients(ev.nativeEvent.text)
         if (ings.length == 0){
@@ -203,6 +209,7 @@ export default function RecipeFormScreen(props:any){
                         return <IngredientCard 
                             {...ing} 
                             onEdit = {onIngredientEdit}
+                            onDelete = {onIngredientDelete}
                             ></IngredientCard>
                     }}
 

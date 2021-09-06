@@ -24,6 +24,10 @@ export default function IngredientCard(props:any){
         setEdit(false);
     }
 
+    const onDelete = ()=>{
+        props.onDelete(ing.key)
+    }
+
     return (
         <Surface style={stylesheet.surface}>
             <View style = {stylesheet.flexRow}>
@@ -45,7 +49,9 @@ export default function IngredientCard(props:any){
                         </Pressable>
                     }
                 </View>
-                <Text style={{ marginHorizontal: 5 }}>D</Text>
+                <Pressable onPress = {onDelete}>
+                    <Text style={{ marginHorizontal: 5 }}>D</Text>
+                </Pressable>
             </View>
         </Surface>
     )
