@@ -6,7 +6,7 @@ import {
 import { TextInput, Button } from "react-native-paper";
 import IngredientCard from "../components/IngredientCard";
 import { RecipeDatabase, IRecipeDatabase, null_unit } from '../Database';
-import { Recipe, Unit, LazyRecipeIngredient} from "../types";
+import { Recipe, Unit, LazyRecipeIngredient, RecipeIngredient} from "../types";
 
 
 let recipeDb: Promise<IRecipeDatabase> = RecipeDatabase();
@@ -14,13 +14,6 @@ let recipeDb: Promise<IRecipeDatabase> = RecipeDatabase();
 type onTextSubmit = (
     NativeSyntheticEvent<TextInputSubmitEditingEventData>
 )
-
-//TODO load from database
-const units = [
-    "",
-    "ml",
-    "g"
-]
 
 export default function RecipeFormScreen(props:any){
 
@@ -32,10 +25,12 @@ export default function RecipeFormScreen(props:any){
     const [newIngredient, setNewIngredient] = useState<string>("");
     const [isBound, setIsBound] = useState<boolean>(false);
     const [errors, setErrors] = useState<Map<string, string>>(new Map<string, string>());
+    const [units, setUnits] = useState<string[]>([])
 
     const newIngInput = useRef(null);
 
     useEffect(()=>{
+        initUnits()
         if(props.route.params){
             initForm(props.route.params.recipe_id)
         }
@@ -48,10 +43,12 @@ export default function RecipeFormScreen(props:any){
             setName(recipe.name)
             setServings(`${recipe.servings}`)
             setIngredients(
-                recipe.ingredients.map((e,i)=>{
+                recipe.ingredients.map((ing,i)=>{
                     return {
                         key:`${i}`,
-                        ...e
+                        name:ing.name,
+                        amount:ing.amount,
+                        unit:ing.unit.symbol
                     }
                 })
             )
@@ -59,9 +56,20 @@ export default function RecipeFormScreen(props:any){
         })
     }
 
-    function parse_ingredients(ing_text: string): LazyRecipeIngredient[] {
+    const initUnits = async ()=>{
+        recipeDb.then(db=>{
+            return db.getAllUnits()
+        }).then(init_units=>{
+            let unit_symbols = init_units
+                .filter(u=>u.symbol !== "")
+                .map(u=>u.symbol)
+            setUnits(unit_symbols)
+        })
+    }
+
+    const parse_ingredients = (ing_text: string): LazyRecipeIngredient[] => {
         let unit_group = units.join("|")
-        let rg = RegExp(`^[\\s]*([\\d\\.]+)[\\s]*(${unit_group})(.*)$`, "gm")
+        let rg = RegExp(`^[\\s]*([\\d\\.]+)[\\s]*(${unit_group}|)(.*)$`, "gm")
 
         let ingredients: LazyRecipeIngredient[] = []
 
@@ -124,34 +132,41 @@ export default function RecipeFormScreen(props:any){
         }
     }
 
-    const onSave = ()=>{
+    const onSave = async ()=>{
         console.log("saving recipe")
         // TODO add validation with snackbars
+        // TODO add 'saving' component on save
+
+        let db = await recipeDb
+        let unit_promises = ingredients.map(ing=>db.readUnit(ing.unit));
+        let ing_units = await Promise.all(unit_promises)
+
+        let ings: RecipeIngredient[] = ingredients.map(
+            (v,i)=> {
+                return {
+                    name:v.name,
+                    amount: v.amount,
+                    unit: ing_units[i]
+                }
+            }
+        )
         let recipe = {
-            name: name,
+            name:name,
             servings: parseInt(servings),
             tags: [],
-            ingredients: ingredients.map(ing => {
-                return {
-                    name: ing.name,
-                    amount: ing.amount,
-                    unit: ing.unit
-                }
-            })
+            ingredients: ings
         }
-        recipeDb.then((db)=>{
-            if (isBound){
-                db.updateRecipe(
-                    props.route.params.recipe_id,
-                    recipe
-                )
-            }else{
-                db.addRecipe(recipe)
-            }
-        }).then(() => {
-            console.log("recipe saved")
-            props.navigation.navigate("Home")
-        })
+        
+        if (isBound){
+            await db.updateRecipe(
+                props.route.params.recipe_id,
+                recipe
+            )
+        }else{
+            await db.addRecipe(recipe)
+        }
+        console.log("recipe saved")
+        props.navigation.navigate("Home")
     }
 
     return (

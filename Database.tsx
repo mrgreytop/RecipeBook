@@ -34,14 +34,15 @@ export interface IRecipeDatabase{
     removeRecipe:(recipe_id:number)=>Promise<void>,
     updateRecipe:(recipe_id:number, update:Partial<Recipe>)=>Promise<void>,
     readRecipe: (recipe_id:number)=>Promise<Recipe>,
-    readUnit: (unit_symbol:string)=>Promise<Unit>
+    readUnit: (unit_symbol:string)=>Promise<Unit>,
+    writeUnit: (unit: Unit)=>Promise<void>,
+    getAllUnits:()=>Promise<Unit[]>
 }
 
 export var RecipeDatabase = (async function(new_recipe_listners?: Function[]){
     console.log("initialising database")
     var max_key = await findMaxKey();
     var unit_init = await checkUnitsInit();
-
     if (!unit_init){
         await initUnits(default_units);
     }
@@ -56,7 +57,7 @@ export var RecipeDatabase = (async function(new_recipe_listners?: Function[]){
 
     async function checkUnitsInit():Promise<boolean>{
         return AsyncStorage.getItem("@init:unit").then((val)=>{
-            return (val === null) || (val === "False")
+            return !((val === null) || (val === "False"))
         })
     }
 
@@ -153,10 +154,9 @@ export var RecipeDatabase = (async function(new_recipe_listners?: Function[]){
         },
 
         readUnit: async function(unit_symbol:string): Promise<Unit>{
-            let slug_symbol = unit_symbol.replace(" ", "_")
-            return AsyncStorage.getItem(`@unit:${slug_symbol}`).then((unit_json:string|null)=>{
+            return AsyncStorage.getItem(`@unit:${unit_symbol}`).then((unit_json:string|null)=>{
                 if (unit_json === null) {
-                    throw new Error(`Cannot find list`);
+                    throw new Error(`Cannot find unit ${unit_symbol}`);
                 } else {
                     let unit: Unit = JSON.parse(unit_json);
                     return unit;
@@ -164,7 +164,31 @@ export var RecipeDatabase = (async function(new_recipe_listners?: Function[]){
             })
         },
         
-        writeUnit: writeUnit
+        writeUnit: writeUnit,
+
+        getAllUnits: async function(): Promise<Unit[]>{
+            return AsyncStorage.getAllKeys().then((keys: string[] | undefined) => {
+                if (keys === undefined) {
+                    return []
+                } else {
+                    return keys.filter((k: string) => k.startsWith("@unit:"))
+                }
+            }).then((recipe_keys: string[]) => {
+                return AsyncStorage.multiGet(recipe_keys)
+            }).then((recipes: [string, string | null][]) => {
+
+                let unit_objs: Unit[] = recipes.map((key_val: [string, string | null]) => {
+                    if (key_val[1] !== null) {
+                        let obj = JSON.parse(key_val[1]);
+                        return obj
+                    } else {
+                        return null
+                    }
+                })
+
+                return unit_objs.filter((obj) => obj !== null)
+            })
+        }
     }
 
 })
