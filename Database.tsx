@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import {Recipe, RecipeIngredient, Unit, SiMeasure} from "./types";
+import {Recipe, RecipeIngredient, Unit, SiMeasure, ListRecipe, ListIngredient} from "./types";
 // TODO add shopping lists to database
 
 
@@ -17,7 +17,33 @@ function convert_unit(amount:number, unit:Unit, new_unit:Unit):number|null{
     }
 }
 
-function combine_ingredients(ingredients: RecipeIngredient[][]){}
+function combine_ingredients(list: ListRecipe):ListIngredient{
+    let ingredients = new Map <string, {unit:Unit, amount:number}[]>()
+    for (let i = 0; i < list.recipes.length; i++) {
+        const ings = list.recipes[i].ingredients
+        for (let j = 0; j < ings.length; j++) {
+            const ing = ings[j]
+            let amounts = ingredients.get(ing.name)
+            if (amounts !== undefined){
+                let unit_amount = amounts.find(a=>a.unit == ing.unit)
+                if (unit_amount !== undefined){
+                    unit_amount.amount += ing.amount
+                }else{
+                    unit_amount = amounts[0]
+                    let converted_amount = convert_unit(ing.amount, ing.unit, unit_amount.unit)
+                    if (converted_amount !== null){
+                        unit_amount.amount += converted_amount
+                    }else{
+                        amounts.push({unit:ing.unit, amount:ing.amount})
+                    }
+                }
+            }else{
+                ingredients.set(ing.name, [{unit:ing.unit, amount:ing.amount}])
+            }
+        }
+    }
+    return {"ingredients":ingredients}
+}
 
 
 export const null_unit = { symbol: "", measure: SiMeasure.None }
@@ -36,7 +62,9 @@ export interface IRecipeDatabase{
     readRecipe: (recipe_id:number)=>Promise<Recipe>,
     readUnit: (unit_symbol:string)=>Promise<Unit>,
     writeUnit: (unit: Unit)=>Promise<void>,
-    getAllUnits:()=>Promise<Unit[]>
+    getAllUnits:()=>Promise<Unit[]>,
+    readListRecipe:()=>Promise<ListRecipe>,
+    readListIngredients:()=>Promise<ListIngredient>
 }
 
 export var RecipeDatabase = (async function(new_recipe_listners?: Function[]){
@@ -187,6 +215,47 @@ export var RecipeDatabase = (async function(new_recipe_listners?: Function[]){
                 })
 
                 return unit_objs.filter((obj) => obj !== null)
+            })
+        },
+
+        readListRecipe: async function(): Promise<ListRecipe>{
+            return AsyncStorage.getItem(`@list:*`).then(list_json=>{
+                let list: ListRecipe
+                if(list_json === null){
+                    list = {recipes:[]}
+                }else{
+                    list = JSON.parse(list_json);
+                }
+                return list
+            })
+        },
+
+        readListIngredients: async function(): Promise<ListIngredient>{
+            return this.readListRecipe().then(list=>{
+                 return combine_ingredients(list)
+            })
+        },
+
+        writeList: async function(list: ListRecipe){
+            let list_json = JSON.stringify(list)
+            return AsyncStorage.setItem("@list:*", list_json)
+        },
+
+        addRecipeToList: async function(recipe_id: number){
+            return Promise.all([
+                this.readListRecipe(), 
+                this.readRecipe(recipe_id)
+            ]).then(([list, recipe])=>{
+                list.recipes.push(recipe)
+                return this.writeList(list)
+            })
+        },
+
+        removeRecipeFromList: async function(recipe_id:number){
+            return this.readListRecipe().then(list=>{
+                let new_list = list.recipes.filter(r=>r._id !== recipe_id)
+                list.recipes = new_list
+                return this.writeList(list)
             })
         }
     }
