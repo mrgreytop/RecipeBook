@@ -7,12 +7,14 @@ import { createStackNavigator } from '@react-navigation/stack';
 import HomeScreen from './screens/Home';
 import RecipeFormScreen from './screens/RecipeForm';
 import { SafeAreaView } from 'react-native';
+import ListScreen from './screens/List';
 
 function ScreenController(){
   return(
     <Stack.Navigator>
       <Stack.Screen name = "Home" component = {HomeScreen} ></Stack.Screen>
       <Stack.Screen name="Recipe" component={RecipeFormScreen} ></Stack.Screen>
+      <Stack.Screen name="List" component={ListScreen} ></Stack.Screen>
     </Stack.Navigator>
   )
 }

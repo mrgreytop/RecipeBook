@@ -37,8 +37,7 @@ export type Recipe = {
 }
 
 export type ListIngredient = {
-    _id:number,
-    ingredients:RecipeIngredient[]
+    ingredients: Map<string, { unit: Unit, amount: number }[]>
 }
 
 export type ListRecipe = {

@@ -57,6 +57,10 @@ export default function HomeScreen(props:any) {
         props.navigation.navigate("Recipe");
     }
 
+    const clickList = ()=>{
+        props.navigation.navigate("List")
+    }
+
     return (
         
         <View style = {{flexDirection:"column", height:"100%"}}>
@@ -75,8 +79,13 @@ export default function HomeScreen(props:any) {
             </View>
             <FAB
                 icon="plus"
-                style={styles.fab}
+                style={styles.add_fab}
                 onPress = {addRecipe}
+            ></FAB>
+            <FAB
+                icon="view-list"
+                style={styles.list_fab}
+                onPress = {clickList}
             ></FAB>
         </View>
     )
@@ -84,10 +93,16 @@ export default function HomeScreen(props:any) {
 
 
 const styles = StyleSheet.create({
-    fab: {
+    add_fab: {
         position: 'absolute',
         margin: 16,
         right: 0,
         bottom: 0,
+    },
+    list_fab: {
+        position: 'absolute',
+        margin: 16,
+        bottom:0,
+        left: 0
     }
 })
