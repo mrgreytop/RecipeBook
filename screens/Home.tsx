@@ -61,6 +61,14 @@ export default function HomeScreen(props:any) {
         props.navigation.navigate("List")
     }
 
+    const addRecipeToList = async (recipe_id:number)=>{
+        recipeDb.then(db=>{
+            return db.addRecipeToList(recipe_id)
+        }).then(()=>{
+            console.log("Recipe added to list")
+        })
+    }
+
     return (
         
         <View style = {{flexDirection:"column", height:"100%"}}>
@@ -71,6 +79,7 @@ export default function HomeScreen(props:any) {
                         return <RecipeCard {...p} 
                             removeThis = {removeRecipe}
                             clickThis = {clickRecipe}
+                            addThis = {addRecipeToList}
                         />
                     }}
                     keyExtractor={item=>`${item._id}`}

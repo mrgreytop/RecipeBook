@@ -14,9 +14,10 @@ export default function ListScreen(props:any){
         }).then(list=>{
             let init_items:any = [];
             list.ingredients.forEach((amounts,name)=>{
-                init_items = [...init_items, ...amounts.map(a=>{
+                init_items = [...init_items, ...amounts.map((a,i)=>{
                     return {
-                        text:`${a.amount.toPrecision(2)} ${a.unit.symbol} ${name}`
+                        text:`${a.amount} ${a.unit.symbol} ${name}`,
+                        key:`${name}${i}`
                     }
                 })]
             })
@@ -29,7 +30,7 @@ export default function ListScreen(props:any){
     },[])
 
     return (
-        <View style = {{flex:1, width:100, height:100}}>
+        <View style = {{flex:1}}>
             <FlatList
                 data = {items}
                 renderItem = {item=>{

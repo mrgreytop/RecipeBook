@@ -64,7 +64,9 @@ export interface IRecipeDatabase{
     writeUnit: (unit: Unit)=>Promise<void>,
     getAllUnits:()=>Promise<Unit[]>,
     readListRecipe:()=>Promise<ListRecipe>,
-    readListIngredients:()=>Promise<ListIngredient>
+    readListIngredients:()=>Promise<ListIngredient>,
+    addRecipeToList:(recipe_id:number)=>Promise<void>,
+    removeRecipeFromList:(recipe_id:number)=>Promise<void>,
 }
 
 export var RecipeDatabase = (async function(new_recipe_listners?: Function[]){
