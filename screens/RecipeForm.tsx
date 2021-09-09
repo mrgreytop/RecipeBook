@@ -5,8 +5,8 @@ import {
 } from "react-native";
 import { TextInput, Button } from "react-native-paper";
 import IngredientCard from "../components/IngredientCard";
-import { RecipeDatabase, IRecipeDatabase, null_unit } from '../Database';
-import { Recipe, Unit, LazyRecipeIngredient, RecipeIngredient} from "../types";
+import { RecipeDatabase, IRecipeDatabase } from '../Database';
+import { Recipe, LazyRecipeIngredient, RecipeIngredient} from "../types";
 
 
 type onTextSubmit = (
@@ -23,7 +23,6 @@ export default function RecipeFormScreen(props:any){
     const [ingredients, setIngredients] = useState<({key:string} & LazyRecipeIngredient)[]>([]);
     const [newIngredient, setNewIngredient] = useState<string>("");
     const [isBound, setIsBound] = useState<boolean>(false);
-    const [errors, setErrors] = useState<Map<string, string>>(new Map<string, string>());
     const [units, setUnits] = useState<string[]>([])
 
     const newIngInput = useRef(null);
