@@ -69,6 +69,14 @@ export default function HomeScreen(props:any) {
         })
     }
 
+    const removeRecipeFromList = async (recipe_id:number)=>{
+        recipeDb.then(db=>{
+            return db.removeRecipeFromList(recipe_id)
+        }).then(()=>{
+            console.log("Recipe removed from list")
+        })
+    }
+
     return (
         
         <View style = {{flexDirection:"column", height:"100%"}}>
@@ -79,7 +87,8 @@ export default function HomeScreen(props:any) {
                         return <RecipeCard {...p} 
                             removeThis = {removeRecipe}
                             clickThis = {clickRecipe}
-                            addThis = {addRecipeToList}
+                            addThisToList = {addRecipeToList}
+                            removeThisFromList = {removeRecipeFromList}
                         />
                     }}
                     keyExtractor={item=>`${item._id}`}

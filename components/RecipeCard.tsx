@@ -31,8 +31,12 @@ export default function RecipeCard(props:any){
                 >Delete</Button>
                 <Button
                     icon="playlist-plus"
-                    onPress = {()=>{props.addThis(recipe._id)}}
-                >Add to List</Button>
+                    onPress = {()=>{props.addThisToList(recipe._id)}}
+                >{}</Button>
+                <Button
+                    icon="playlist-minus"
+                    onPress = {()=>{props.removeThisFromList(recipe._id)}}
+                >{}</Button>
             </Card.Actions>
         </Card>
     )
