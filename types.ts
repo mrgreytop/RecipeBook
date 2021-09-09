@@ -5,7 +5,7 @@ export type Tag = {
 }
 
 export enum SiMeasure{
-    Weight = "kg",
+    Weight = "g",
     Volume = "ml",
     None = "",
 }

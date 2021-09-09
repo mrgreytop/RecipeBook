@@ -9,15 +9,14 @@ import { RecipeDatabase, IRecipeDatabase, null_unit } from '../Database';
 import { Recipe, Unit, LazyRecipeIngredient, RecipeIngredient} from "../types";
 
 
-let recipeDb: Promise<IRecipeDatabase> = RecipeDatabase();
-
 type onTextSubmit = (
     NativeSyntheticEvent<TextInputSubmitEditingEventData>
 )
 
 export default function RecipeFormScreen(props:any){
-
+    
     // TODO implment tags in form
+    let recipeDb: Promise<IRecipeDatabase> = RecipeDatabase();
 
     const [name, setName] = useState<string>("");
     const [servings, setServings] = useState<string>("");
@@ -63,6 +62,7 @@ export default function RecipeFormScreen(props:any){
             let unit_symbols = init_units
                 .filter(u=>u.symbol !== "")
                 .map(u=>u.symbol)
+            console.log("available units", unit_symbols)
             setUnits(unit_symbols)
         })
     }

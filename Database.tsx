@@ -12,7 +12,7 @@ function convert_unit(amount:number, unit:Unit, new_unit:Unit):number|null{
         return amount
     }
     if ((unit.factor !== undefined) && (new_unit.factor !== undefined)){
-        return amount / (unit.factor * new_unit.factor)
+        return amount * new_unit.factor / unit.factor
     }else{
         throw new Error("unexpected null factors")
     }
@@ -62,7 +62,8 @@ const default_units: Unit[] = [
     null_unit,
     {symbol: "g", measure:SiMeasure.Weight, factor: 1},
     {symbol: "ml", measure:SiMeasure.Volume, factor: 1},
-    {symbol: "kg", measure:SiMeasure.Weight, factor: 1000}
+    {symbol: "kg", measure:SiMeasure.Weight, factor: 1/1000},
+    {symbol: "oz", measure:SiMeasure.Weight, factor: 0.035274},
 ]
 
 export interface IRecipeDatabase{
@@ -84,9 +85,9 @@ export var RecipeDatabase = (async function(new_recipe_listners?: Function[]){
     console.log("initialising database")
     var max_key = await findMaxKey();
     var unit_init = await checkUnitsInit();
-    if (!unit_init){
-        await initUnits(default_units);
-    }
+    // if (!unit_init){
+    await initUnits(default_units);
+    // }
 
     async function findMaxKey():Promise<number>{
         return AsyncStorage.getItem("@maxkey:recipe").then((val:string|null)=>{
@@ -274,3 +275,8 @@ export var RecipeDatabase = (async function(new_recipe_listners?: Function[]){
     }
 
 })
+
+export const exportedForTesting = {
+    convert_unit,
+    combine_ingredients
+}
