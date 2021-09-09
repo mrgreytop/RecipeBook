@@ -4,13 +4,14 @@ import {Recipe, RecipeIngredient, Unit, SiMeasure, ListRecipe, ListIngredient} f
 
 
 function convert_unit(amount:number, unit:Unit, new_unit:Unit):number|null{
+    console.log("converting", unit, "to",  new_unit)
     if (unit.measure != new_unit.measure){
         return null
     }
     if (unit.measure == SiMeasure.None){
         return amount
     }
-    if ((unit.factor === null) && (new_unit.factor === null)){
+    if ((unit.factor !== undefined) && (new_unit.factor !== undefined)){
         return amount / (unit.factor * new_unit.factor)
     }else{
         throw new Error("unexpected null factors")
@@ -20,24 +21,33 @@ function convert_unit(amount:number, unit:Unit, new_unit:Unit):number|null{
 function combine_ingredients(list: ListRecipe):ListIngredient{
     let ingredients = new Map <string, {unit:Unit, amount:number}[]>()
     for (let i = 0; i < list.recipes.length; i++) {
+        // for each recipe
         const ings = list.recipes[i].ingredients
         for (let j = 0; j < ings.length; j++) {
+            // for each ingredient
             const ing = ings[j]
             let amounts = ingredients.get(ing.name)
+            // if ingredient already in @ingredients
             if (amounts !== undefined){
+                // find the amount that has the same units
                 let unit_amount = amounts.find(a=>a.unit == ing.unit)
                 if (unit_amount !== undefined){
+                    // if same unit exists sum amounts
                     unit_amount.amount += ing.amount
                 }else{
+                    // else try to convert units
                     unit_amount = amounts[0]
                     let converted_amount = convert_unit(ing.amount, ing.unit, unit_amount.unit)
                     if (converted_amount !== null){
+                        // if can convert add converted amount
                         unit_amount.amount += converted_amount
                     }else{
+                        // else add annother unit to array for this ingredient
                         amounts.push({unit:ing.unit, amount:ing.amount})
                     }
                 }
             }else{
+                // else create a new entry for @ingredients
                 ingredients.set(ing.name, [{unit:ing.unit, amount:ing.amount}])
             }
         }
@@ -52,6 +62,7 @@ const default_units: Unit[] = [
     null_unit,
     {symbol: "g", measure:SiMeasure.Weight, factor: 1},
     {symbol: "ml", measure:SiMeasure.Volume, factor: 1},
+    {symbol: "kg", measure:SiMeasure.Weight, factor: 1000}
 ]
 
 export interface IRecipeDatabase{
