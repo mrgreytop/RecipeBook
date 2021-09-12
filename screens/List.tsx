@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import {View, FlatList} from "react-native";
 import {Text} from "react-native-paper";
 import { RecipeDatabase } from "../Database";
+import ListCard from "../components/ListCard";
 
 
 export default function ListScreen(props:any){
@@ -34,7 +35,7 @@ export default function ListScreen(props:any){
             <FlatList
                 data = {items}
                 renderItem = {item=>{
-                    return <Text>{item.item.text}</Text>
+                    return <ListCard {...item}></ListCard>
                 }}
             >
             </FlatList>
