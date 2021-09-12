@@ -79,15 +79,16 @@ export interface IRecipeDatabase{
     readListIngredients:()=>Promise<ListIngredient>,
     addRecipeToList:(recipe_id:number)=>Promise<void>,
     removeRecipeFromList:(recipe_id:number)=>Promise<void>,
+    resetDatabase:()=>Promise<void>
 }
 
 export var RecipeDatabase = (async function(new_recipe_listners?: Function[]){
     console.log("initialising database")
     var max_key = await findMaxKey();
     var unit_init = await checkUnitsInit();
-    // if (!unit_init){
-    await initUnits(default_units);
-    // }
+    if (!unit_init){
+        await initUnits(default_units);
+    }
 
     async function findMaxKey():Promise<number>{
         return AsyncStorage.getItem("@maxkey:recipe").then((val:string|null)=>{
@@ -108,12 +109,46 @@ export var RecipeDatabase = (async function(new_recipe_listners?: Function[]){
         return AsyncStorage.setItem(`@unit:${unit.symbol}`, string_unit)
     }
 
+    async function getAllUnits(): Promise<Unit[]> {
+        return AsyncStorage.getAllKeys().then((keys: string[] | undefined) => {
+            if (keys === undefined) {
+                return []
+            } else {
+                return keys.filter((k: string) => k.startsWith("@unit:"))
+            }
+        }).then((recipe_keys: string[]) => {
+            return AsyncStorage.multiGet(recipe_keys)
+        }).then((recipes: [string, string | null][]) => {
+
+            let unit_objs: Unit[] = recipes.map((key_val: [string, string | null]) => {
+                if (key_val[1] !== null) {
+                    let obj = JSON.parse(key_val[1]);
+                    return obj
+                } else {
+                    return null
+                }
+            })
+
+            return unit_objs.filter((obj) => obj !== null)
+        })
+    }
+
     async function initUnits(units: Unit[]){
-        let unit_writes = []
-        for (let i = 0; i < units.length; i++) {
-            unit_writes.push(writeUnit(default_units[i]))
-        }
-        return Promise.all(unit_writes).then(()=>{
+        return getAllUnits().then(units=>{
+            let unit_deletes = []
+            for (let i = 0; i < units.length; i++) {
+                unit_deletes.push(
+                    AsyncStorage.removeItem(`@unit:${units[i].symbol}`)
+                )
+            }
+            return Promise.all(unit_deletes)
+        }).then(()=>{
+            let unit_writes = []
+            for (let i = 0; i < units.length; i++) {
+                unit_writes.push(writeUnit(default_units[i]))
+            }
+            return Promise.all(unit_writes)
+        }).then(() => {
             AsyncStorage.setItem("@init:unit", "True")
         })
     }
@@ -270,6 +305,14 @@ export var RecipeDatabase = (async function(new_recipe_listners?: Function[]){
                 let new_list = list.recipes.filter(r=>r._id !== recipe_id)
                 list.recipes = new_list
                 return this.writeList(list)
+            })
+        },
+
+        resetDatabase: async function(){
+            return AsyncStorage.getAllKeys().then(keys=>{
+                return AsyncStorage.multiRemove(keys)
+            }).then(()=>{
+                return initUnits(default_units)
             })
         }
     }

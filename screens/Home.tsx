@@ -77,6 +77,12 @@ export default function HomeScreen(props:any) {
         })
     }
 
+    const resetDb = async ()=>{
+        recipeDb.then(db=>{
+            db.resetDatabase()
+        })
+    }
+
     return (
         
         <View style = {{flexDirection:"column", height:"100%"}}>
@@ -105,6 +111,11 @@ export default function HomeScreen(props:any) {
                 style={styles.list_fab}
                 onPress = {clickList}
             ></FAB>
+            <FAB
+                icon="minus"
+                style={styles.reset_fab}
+                onPress = {resetDb}
+            ></FAB>
         </View>
     )
 }
@@ -122,5 +133,11 @@ const styles = StyleSheet.create({
         margin: 16,
         bottom:0,
         left: 0
+    },
+    reset_fab: {
+        position: 'absolute',
+        margin: 16,
+        bottom:0,
+        left: 100
     }
 })
