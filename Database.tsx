@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import {Recipe, RecipeIngredient, Unit, SiMeasure, ListRecipe, ListIngredient} from "./types";
+import {Recipe, RecipeIngredient, Unit, SiMeasure, ListIngredient} from "./types";
 // TODO add shopping lists to database
 
 
@@ -18,11 +18,11 @@ function convert_unit(amount:number, unit:Unit, new_unit:Unit):number|null{
     }
 }
 
-function combine_ingredients(list: ListRecipe):ListIngredient{
+function combine_ingredients(list: Recipe[]):ListIngredient{
     let ingredients = new Map <string, {unit:Unit, amount:number}[]>()
-    for (let i = 0; i < list.recipes.length; i++) {
+    for (let i = 0; i < list.length; i++) {
         // for each recipe
-        const ings = list.recipes[i].ingredients
+        const ings = list[i].ingredients
         for (let j = 0; j < ings.length; j++) {
             // for each ingredient
             const ing = ings[j]
@@ -75,7 +75,7 @@ export interface IRecipeDatabase{
     readUnit: (unit_symbol:string)=>Promise<Unit>,
     writeUnit: (unit: Unit)=>Promise<void>,
     getAllUnits:()=>Promise<Unit[]>,
-    readListRecipe:()=>Promise<ListRecipe>,
+    readListRecipe:()=>Promise<Recipe[]>,
     readListIngredients:()=>Promise<ListIngredient>,
     addRecipeToList:(recipe_id:number)=>Promise<void>,
     removeRecipeFromList:(recipe_id:number)=>Promise<void>,
@@ -109,48 +109,13 @@ export var RecipeDatabase = (async function(new_recipe_listners?: Function[]){
         return AsyncStorage.setItem(`@unit:${unit.symbol}`, string_unit)
     }
 
-    async function getAllUnits(): Promise<Unit[]> {
-        return AsyncStorage.getAllKeys().then((keys: string[] | undefined) => {
-            if (keys === undefined) {
-                return []
-            } else {
-                return keys.filter((k: string) => k.startsWith("@unit:"))
-            }
-        }).then((recipe_keys: string[]) => {
-            return AsyncStorage.multiGet(recipe_keys)
-        }).then((recipes: [string, string | null][]) => {
-
-            let unit_objs: Unit[] = recipes.map((key_val: [string, string | null]) => {
-                if (key_val[1] !== null) {
-                    let obj = JSON.parse(key_val[1]);
-                    return obj
-                } else {
-                    return null
-                }
-            })
-
-            return unit_objs.filter((obj) => obj !== null)
-        })
-    }
-
     async function initUnits(units: Unit[]){
-        return getAllUnits().then(units=>{
-            let unit_deletes = []
-            for (let i = 0; i < units.length; i++) {
-                unit_deletes.push(
-                    AsyncStorage.removeItem(`@unit:${units[i].symbol}`)
-                )
-            }
-            return Promise.all(unit_deletes)
-        }).then(()=>{
-            let unit_writes = []
-            for (let i = 0; i < units.length; i++) {
-                unit_writes.push(writeUnit(default_units[i]))
-            }
-            return Promise.all(unit_writes)
-        }).then(() => {
-            AsyncStorage.setItem("@init:unit", "True")
-        })
+        let unit_writes = []
+        for (let i = 0; i < units.length; i++) {
+            unit_writes.push(writeUnit(default_units[i]))
+        }
+        await Promise.all(unit_writes)
+        await AsyncStorage.setItem("@init:unit", "True")
     }
 
     async function incrementMaxKey():Promise<number>{
@@ -202,9 +167,8 @@ export var RecipeDatabase = (async function(new_recipe_listners?: Function[]){
         },
 
         removeRecipe: async function(recipe_id:number): Promise<void>{
-            console.log("removing recipe")
             await AsyncStorage.removeItem(`@recipe:${recipe_id}`)
-            console.log("recipe removed")
+            await this.removeRecipeFromList(recipe_id)
         },
 
         updateRecipe: async function(recipe_id:number, update:Partial<Recipe>): Promise<void>{
@@ -267,16 +231,18 @@ export var RecipeDatabase = (async function(new_recipe_listners?: Function[]){
             })
         },
 
-        readListRecipe: async function(): Promise<ListRecipe>{
-            return AsyncStorage.getItem(`@list:*`).then(list_json=>{
-                let list: ListRecipe
-                if(list_json === null){
-                    list = {recipes:[]}
-                }else{
-                    list = JSON.parse(list_json);
-                }
-                return list
-            })
+        readListRecipe: async function(): Promise<Recipe[]>{
+            let list_json = await AsyncStorage.getItem(`@list:*`)
+                
+            if(list_json === null){
+                return [];
+            }else{
+                let recipe_ids:number[] = JSON.parse(list_json);
+                let recipe_promises = recipe_ids.map(id=>{
+                    return this.readRecipe(id).catch(e=>e)
+                }).filter(e => !(e instanceof Error));
+                return Promise.all<Recipe>(recipe_promises)
+            }
         },
 
         readListIngredients: async function(): Promise<ListIngredient>{
@@ -285,26 +251,32 @@ export var RecipeDatabase = (async function(new_recipe_listners?: Function[]){
             })
         },
 
-        writeList: async function(list: ListRecipe){
+        writeList: async function(list: number[]){
             let list_json = JSON.stringify(list)
             return AsyncStorage.setItem("@list:*", list_json)
         },
 
         addRecipeToList: async function(recipe_id: number){
-            return Promise.all([
-                this.readListRecipe(), 
-                this.readRecipe(recipe_id)
-            ]).then(([list, recipe])=>{
-                list.recipes.push(recipe)
-                return this.writeList(list)
+            return AsyncStorage.getItem(`@list:*`).then(list_json=>{
+                let list: number[];
+                if (list_json !== null){
+                    list = JSON.parse(list_json)
+                    list.push(recipe_id)
+                }else{
+                    list = [recipe_id]
+                }
+
+                return AsyncStorage.setItem("@list:*", JSON.stringify(list))
             })
         },
 
         removeRecipeFromList: async function(recipe_id:number){
-            return this.readListRecipe().then(list=>{
-                let new_list = list.recipes.filter(r=>r._id !== recipe_id)
-                list.recipes = new_list
-                return this.writeList(list)
+            return AsyncStorage.getItem(`@list:*`).then(list_json => {
+                if (list_json !== null) {
+                    let list: number[] = JSON.parse(list_json)
+                    let new_list = list.filter(el=>el !== recipe_id)
+                    return this.writeList(new_list);
+                }
             })
         },
 
