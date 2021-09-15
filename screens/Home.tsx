@@ -5,8 +5,6 @@ import { Recipe } from "../types";
 import { RecipeDatabase, IRecipeDatabase } from '../Database';
 import { FAB } from 'react-native-paper';
 
-// TODO create context for recipeDatabase 
-// instead of instantiating on every screen
 
 export default function HomeScreen(props:any) {
     

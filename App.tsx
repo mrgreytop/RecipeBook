@@ -19,7 +19,7 @@ function ScreenController(){
   )
 }
 
-// TODO create a 'shopping list screen'
+// TODO create context for RecipeDatabase
 
 const Stack = createStackNavigator();
 

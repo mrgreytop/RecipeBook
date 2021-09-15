@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import {View, FlatList} from "react-native";
-import {Text} from "react-native-paper";
 import { RecipeDatabase } from "../Database";
 import ListCard from "../components/ListCard";
 
+//TODO 'update' list button
+//TODO 'reset' list button
 
 export default function ListScreen(props:any){
     const [items, setItems] = useState<any>([])

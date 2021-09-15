@@ -139,8 +139,9 @@ export default function RecipeFormScreen(props:any){
 
     const onSave = async ()=>{
         console.log("saving recipe")
-        // TODO add validation with snackbars
+        // TODO add validation errors with snackbars
         // TODO add 'saving' component on save
+        // TODO slugify ingredient names
 
         let db = await recipeDb
         let unit_promises = ingredients.map(ing=>db.readUnit(ing.unit));

@@ -36,6 +36,7 @@ export type Recipe = {
     ingredients:RecipeIngredient[]
 }
 
+// TODO add checked prop to list ingredient
 export type ListIngredient = {
     ingredients: Map<string, { unit: Unit, amount: number }[]>
 }
