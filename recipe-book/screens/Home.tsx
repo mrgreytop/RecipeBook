@@ -1,8 +1,8 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import { View, FlatList, StyleSheet } from 'react-native';
 import RecipeCard from '../components/RecipeCard';
 import { Recipe } from "../types";
-import { RecipeDatabase, IRecipeDatabase } from '../Database';
+import { IRecipeDatabase, RecipeDatabaseContext } from '../Database';
 import { FAB } from 'react-native-paper';
 
 
@@ -11,15 +11,21 @@ export default function HomeScreen(props:any) {
     // TODO implment search function
     
     const [recipes, setRecipes] = useState<Recipe[]>()
+    const {db, setListeners} = useContext(RecipeDatabaseContext);
     
     const initRecipes = async ()=>{
-        return recipeDb.then(db=>{
+        return db.then((db: IRecipeDatabase)=>{
             return db.getAllRecipes();
-        }).then(init_recipes =>{
+        }).then((init_recipes: Recipe[]) =>{
             setRecipes(init_recipes);
-        });
+        }).catch((e: any)=>{
+            console.log("database un init", e)
+        })
     }
-    const recipeDb: Promise<IRecipeDatabase> = RecipeDatabase([initRecipes]);
+
+    useEffect(()=>{
+        setListeners([initRecipes])
+    }, [])
 
     useEffect(()=>{
         const unsub = props.navigation.addListener(
@@ -32,7 +38,7 @@ export default function HomeScreen(props:any) {
     },[props.navigation]);
 
     const removeRecipe = async (recipe_id:number)=>{
-        return recipeDb.then(db=>{
+        return db.then((db: IRecipeDatabase)=>{
             return db.removeRecipe(recipe_id);
         }).then(()=>{
             setRecipes((old_recipes: Recipe[] | undefined) => {
@@ -60,7 +66,7 @@ export default function HomeScreen(props:any) {
     }
 
     const addRecipeToList = async (recipe_id:number)=>{
-        recipeDb.then(db=>{
+        db.then((db: IRecipeDatabase)=>{
             return db.addRecipeToList(recipe_id)
         }).then(()=>{
             console.log("Recipe added to list")
@@ -68,7 +74,7 @@ export default function HomeScreen(props:any) {
     }
 
     const removeRecipeFromList = async (recipe_id:number)=>{
-        recipeDb.then(db=>{
+        db.then((db: IRecipeDatabase)=>{
             return db.removeRecipeFromList(recipe_id)
         }).then(()=>{
             console.log("Recipe removed from list")
@@ -76,7 +82,7 @@ export default function HomeScreen(props:any) {
     }
 
     const resetDb = async ()=>{
-        recipeDb.then(db=>{
+        db.then((db: IRecipeDatabase)=>{
             db.resetDatabase()
         })
     }

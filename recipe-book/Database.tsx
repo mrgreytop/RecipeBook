@@ -1,3 +1,4 @@
+import React from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {Recipe, RecipeIngredient, Unit, SiMeasure, ListIngredient} from "./types";
 // TODO add shopping lists to database
@@ -290,6 +291,12 @@ export var RecipeDatabase = (async function(new_recipe_listners?: Function[]){
     }
 
 })
+
+export const RecipeDatabaseContext = React.createContext<any>({
+    db:null,
+    setListeners: (listeners:Function[])=>{}
+});
+
 
 export const exportedForTesting = {
     convert_unit,
