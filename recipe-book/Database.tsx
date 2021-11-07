@@ -292,8 +292,8 @@ export var RecipeDatabase = (async function(new_recipe_listners?: Function[]){
 
 })
 
-export const RecipeDatabaseContext = React.createContext<any>({
-    db:null,
+export const RecipeDatabaseContext = React.createContext<{db:Promise<IRecipeDatabase>, setListeners:(l:Function[])=>void}>({
+    db:RecipeDatabase(),
     setListeners: (listeners:Function[])=>{}
 });
 
